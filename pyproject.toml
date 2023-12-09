@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "course-work-5"
+version = "0.1.0"
+description = ""
+authors = ["Olga Lebedeva <olga.s.lebedeva@outlook.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
