@@ -2,8 +2,13 @@ from typing import Any
 import psycopg2
 import requests
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from config import URL_HH_EMP, URL_HH_VAC
+#from src.config import URL_HH_EMP, URL_HH_VAC
+from pathlib import Path
 
+URL_HH_EMP = 'https://api.hh.ru/employers/'
+URL_HH_VAC = 'https://api.hh.ru/vacancies?employer_id='
+JSON_HH_EMP = Path(Path(__file__).parent, 'cache_json', 'cache_hh_emp.json')
+JSON_HH_VAC = Path(Path(__file__).parent, 'cache_json', 'cache_hh_vac.json')
 
 
 def api_request_vacancy(company_id):
@@ -20,7 +25,6 @@ def api_request_vacancy(company_id):
         for vacancy in vacancies['items']:
             if vacancy['salary'] is not None:
                 hh_vacancies = {
-                    'vacancy_id': int(vacancy['id']),
                     'vacancy_name': vacancy['name'],
                     'salary_from': vacancy['salary']['from'],
                     'requirement': vacancy['snippet']['requirement'],
@@ -49,21 +53,29 @@ def api_request_employer(company_id):
         return hh_company
 
 
-def create_database(database_name: str, params: dict) -> None:
+def create_database() -> None:
     """Создание базы данных и таблиц по работодателям и вакансиям"""
 
-    conn = psycopg2.connect(dbname='postgres', **params)
+    conn = psycopg2.connect(host='localhost', database='postgres', user='postgres', password='5758', port='5432')
     conn.autocommit = True
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = conn.cursor()
 
-    cur.execute(f'DROP DATABASE IF EXISTS {database_name}')
-    cur.execute(f'CREATE DATABASE {database_name}')
+    cur.execute("""DROP DATABASE IF EXISTS Course_Work_5""")
+    cur.close()
+    conn.close()
+
+    conn = psycopg2.connect(host='localhost', database='postgres', user='postgres', password='5758', port='5432')
+    conn.autocommit = True
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur = conn.cursor()
+
+    cur.execute("""CREATE DATABASE Course_Work_5""")
 
     cur.close()
     conn.close()
 
-    conn = psycopg2.connect(dbname=database_name, **params)
+    conn = psycopg2.connect(database='Course_Work_5', host='localhost', user='postgres', password='5758', port='5432')
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE employers(
@@ -91,36 +103,33 @@ def create_database(database_name: str, params: dict) -> None:
 
 
 
-def save_data_to_database(data: list, database_name: str, params: dict) -> None:
+def save_data_to_database(employers_ids: list, database_name: str, params: dict) -> None:
     """Заполняет таблицы данными о работодателях и вакансиях с сайта НН"""
 
     conn = psycopg2.connect(dbname=database_name, **params)
     with conn.cursor() as cur:
-        for channel in data:
-            channel_data = channel['channel']['snippet']
-            channel_stats = channel['channel']['statistics']
+        for employer_id in employers_ids:
+            employer_data = api_request_employer(employer_id)
             cur.execute(
                 """
-                INSERT INTO channels(title, views, subscribers, videos, channel_url)
+                INSERT INTO employers(employer_id, company_name, open_vacancies, company_url, about_company)
                 VALUES (%s, %s, %s, %s, %s)
-                RETURNING channel_id
+                RETURNING employer_id
                 """,
-                (channel_data['title'], channel_stats['viewCount'], channel_stats['subscriberCount'],
-                 channel_stats['videoCount'], f"https://www.youtube.com/channel {channel['channel']['id']}")
+                (employer_data['employer_id'], employer_data['company_name'], employer_data['open_vacancies'],
+                 employer_data['company_url'], employer_data['about_company'])
             )
-            channel_id = cur.fetchone()[0]  # (1, )
 
-            videos_data = channel['videos']
-            for video in videos_data:
-                video_data = video['snippet']
+        for employer_id in employers_ids:
+            vacancy_data = api_request_vacancy(employer_id)
+            for vacancy in vacancy_data:
                 cur.execute(
                     """
-                    INSERT INTO videos (channel_id, title, publish_date, video_url)
+                    INSERT INTO vacancies(vacancy_name, salary_from, requirement, employer_id)
                     VALUES (%s, %s, %s, %s)
                     """,
-                    (channel_id, video_data['title'], video_data['publishedAt'],
-                     f"https://www.youtube.com/watch?v={video['id']['videoId']}")
+                    (vacancy['vacancy_name'], vacancy['salary_from'], vacancy['requirement'],
+                     vacancy['employer_id'])
                 )
-
     conn.commit()
     conn.close()
