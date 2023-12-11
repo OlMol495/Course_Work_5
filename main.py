@@ -1,9 +1,9 @@
-import os
-from config import config
+from src.config import config
+from src.utils import create_database, save_data_to_database
 
 
 def main():
-    employer_ids = [
+    employers_ids = [
         1740,  # Яндекс
         58320,  # Россельхозбанк
         3529,  # Сбер
@@ -16,9 +16,12 @@ def main():
         193400  # АВТОВАЗ
     ]
 
-    params = config()
+    params = {'host': 'localhost', 'user': 'postgres', 'password': '5758'}
+    create_database()
+    save_data_to_database(employers_ids,'Course_work_5', params)
 
-    pass
+
+
 
 if __name__ == '__main__':
     main()
