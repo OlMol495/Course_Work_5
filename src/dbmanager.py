@@ -5,7 +5,7 @@ class DBManager():
     """Подключается к БД PostgreSQL и выполняет различные запросы."""
 
     def __init__(self, params):
-        self.conn = psycopg2.connect(dbname='HeadhunterRU', **params)
+        self.conn = psycopg2.connect(dbname='Course_Work_5', **params)
         self.cur = self.conn.cursor()
 
 
@@ -13,26 +13,56 @@ class DBManager():
         """
         Получает список всех компаний и количество вакансий у каждой компании.
         """
-        pass
+        self.cur.execute(
+            """SELECT company_name, open_vacancies FROM companies""")
+
+        result = self.cur.fetchall()
+        return result
+
 
     def get_all_vacancies(self):
         """
         Получает список всех вакансий с указанием названия компании,
         названия вакансии и зарплаты и ссылки на вакансию.
         """
-        pass
+        self.cur.execute(
+            """
+            SELECT company_name, vacancy_name, salary_from, vacancy_url
+            FROM vacancies
+            JOIN employers USING (employer_id)
+            GROUP BY employers.company_name
+            """
+        )
+        result = self.cur.fetchall()
+        return result
+
 
     def get_avg_salary(self):
         """Получает среднюю зарплату по вакансиям."""
-        pass
+
+        self.cur.execute(
+            """
+            SELECT AVG(salary_from) AS avg_salary FROM vacancies
+            """
+        )
+        result = self.cur.fetchall()
+        return result
+
 
     def get_vacancies_with_higher_salary(self):
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
-        pass
+        self.cur.execute(
+            """
+            SELECT * FROM vacancies
+            WHERE salary_from > (SELECT AVG(salary_from) FROM vacancies)
+            """
+        )
+        result = self.cur.fetchall()
+        return result
+
 
     def get_vacancies_with_keyword(self, keyword, cur):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова."""
-        cur.execute(f'''SELECT * FROM vacancies WHERE vacancy_name LIKE "%{keyword}%"''')
-        result = cur.fetchall()
+        self.cur.execute(f'''SELECT * FROM vacancies WHERE vacancy_name LIKE "%{keyword}%"''')
+        result = self.cur.fetchall()
         return result
-
