@@ -28,6 +28,7 @@ def api_request_vacancy(company_id):
                     'vacancy_name': vacancy['name'],
                     'salary_from': vacancy['salary']['from'],
                     'requirement': vacancy['snippet']['requirement'],
+                    'vacancy_url': vacancy['alternate_url']
                     'employer_id': int(company_id)
                 }
                 vacancies_list.append(hh_vacancies)
@@ -94,6 +95,7 @@ def create_database() -> None:
                 vacancy_name VARCHAR(250) NOT NULL,
                 salary_from INTEGER,
                 requirement TEXT,
+                vacancy_url' TEXT,
                 employer_id INTEGER REFERENCES employers(employer_id)
             )
         """)
@@ -125,11 +127,11 @@ def save_data_to_database(employers_ids: list, database_name: str, params: dict)
             for vacancy in vacancy_data:
                 cur.execute(
                     """
-                    INSERT INTO vacancies(vacancy_name, salary_from, requirement, employer_id)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO vacancies(vacancy_name, salary_from, requirement, vacancy_url, employer_id)
+                    VALUES (%s, %s, %s, %s, %s)
                     """,
                     (vacancy['vacancy_name'], vacancy['salary_from'], vacancy['requirement'],
-                     vacancy['employer_id'])
+                     vacancy['alternate_url'], vacancy['employer_id'])
                 )
     conn.commit()
     conn.close()
