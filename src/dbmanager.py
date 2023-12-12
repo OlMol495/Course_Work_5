@@ -61,7 +61,7 @@ class DBManager():
         return result
 
 
-    def get_vacancies_with_keyword(self, keyword, cur):
+    def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова."""
         self.cur.execute(f'''SELECT * FROM vacancies WHERE vacancy_name LIKE "%{keyword}%"''')
         result = self.cur.fetchall()

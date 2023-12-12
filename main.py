@@ -23,6 +23,7 @@ def main():
     params = {'host': 'localhost', 'user': 'postgres', 'password': '5758', 'port': '5432'}
     create_database()
     save_data_to_database(employers_ids,'Course_work_5', params)
+    dbmanager = DBManager()
 
     while True:
 
@@ -36,26 +37,26 @@ def main():
             "Введите Стоп, чтобы завершить работу\n"
         )
 
-        if extra.lower() == "стоп":
+        if extra.lower() in ('стоп', 'stop'):
             print('Спасибо, что воспользовались нашей программой.\n'
                   ' До свидания!')
             break
         elif extra == '1':
-            print(f'{DBManager.get_companies_and_vacancies_count()}\n')
+            print(f'{dbmanager.get_companies_and_vacancies_count()}\n')
 
         elif extra == '2':
-            print(f'{DBManager.get_all_vacancies()}\n')
+            print(f'{dbmanager.get_all_vacancies()}\n')
 
         elif extra == '3':
-            print(f'{DBManager.get_avg_salary()}\n')
+            print(f'{dbmanager.get_avg_salary()}\n')
 
         elif extra == '4':
-            print(f'{DBManager.get_vacancies_with_higher_salary()}\n')
-            print()
+            print(f'{dbmanager.get_vacancies_with_higher_salary()}\n')
+
         elif extra == '5':
-            keyword = input('Введите ключевое слово: ')
-            print(f'{DBManager.get_vacancies_with_keyword(keyword)}\n')
-            print()
+            keyword = input('Введите слово для поиска вакансий: \n')
+            print(f'{dbmanager.get_vacancies_with_keyword(keyword)}\n')
+
         else:
             print('Неверный ввод. Повторите')
             
