@@ -2,7 +2,7 @@ from typing import Any
 import psycopg2
 import requests
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-#from src.config import URL_HH_EMP, URL_HH_VAC
+# from src.config import URL_HH_EMP, URL_HH_VAC
 from pathlib import Path
 
 URL_HH_EMP = 'https://api.hh.ru/employers/'
@@ -14,9 +14,9 @@ JSON_HH_VAC = Path(Path(__file__).parent, 'cache_json', 'cache_hh_vac.json')
 def api_request_vacancy(company_id):
     """Запрос вакансий с сайта HH и формирование списка вакансий."""
     params = {
-       'per_page': 100,
-       'only_with_vacancies': True
-   }
+        'per_page': 100,
+        'only_with_vacancies': True
+    }
     url = URL_HH_VAC + str(company_id)
     vacancies_list = []
     response = requests.get(url, params=params)
@@ -33,6 +33,7 @@ def api_request_vacancy(company_id):
                 }
                 vacancies_list.append(hh_vacancies)
         return vacancies_list
+
 
 def api_request_employer(company_id):
     """Запрос данных о работодателе с сайта НН"""
@@ -102,7 +103,6 @@ def create_database() -> None:
 
     conn.commit()
     conn.close()
-
 
 
 def save_data_to_database(employers_ids: list, database_name: str, params: dict) -> None:

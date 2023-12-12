@@ -8,7 +8,6 @@ class DBManager():
         self.conn = psycopg2.connect(dbname='Course_Work_5', **params)
         self.cur = self.conn.cursor()
 
-
     def get_companies_and_vacancies_count(self):
         """
         Получает список всех компаний и количество вакансий у каждой компании.
@@ -18,7 +17,6 @@ class DBManager():
 
         result = self.cur.fetchall()
         return result
-
 
     def get_all_vacancies(self):
         """
@@ -36,7 +34,6 @@ class DBManager():
         result = self.cur.fetchall()
         return result
 
-
     def get_avg_salary(self):
         """Получает среднюю зарплату по вакансиям."""
 
@@ -48,7 +45,6 @@ class DBManager():
         result = self.cur.fetchall()
         return result
 
-
     def get_vacancies_with_higher_salary(self):
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям."""
         self.cur.execute(
@@ -59,7 +55,6 @@ class DBManager():
         )
         result = self.cur.fetchall()
         return result
-
 
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова."""
