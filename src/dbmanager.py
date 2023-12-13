@@ -27,7 +27,8 @@ class DBManager():
             """
             SELECT company_name, vacancy_name, salary_from, vacancy_url
             FROM vacancies
-            JOIN employers USING (employer_id)            
+            JOIN employers USING (employer_id)
+            ORDER BY employers.company_name DESC            
             """
         )
         result = self.cur.fetchall()
