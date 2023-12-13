@@ -2,16 +2,10 @@ from typing import Any
 import psycopg2
 import requests
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-# from src.config import URL_HH_EMP, URL_HH_VAC
-from pathlib import Path
-
-URL_HH_EMP = 'https://api.hh.ru/employers/'
-URL_HH_VAC = 'https://api.hh.ru/vacancies?employer_id='
-JSON_HH_EMP = Path(Path(__file__).parent, 'cache_json', 'cache_hh_emp.json')
-JSON_HH_VAC = Path(Path(__file__).parent, 'cache_json', 'cache_hh_vac.json')
+from src.config import URL_HH_EMP, URL_HH_VAC
 
 
-def api_request_vacancy(company_id):
+def api_request_vacancy(company_id: list[int]) -> list[dict[str, Any]]:
     """Запрос вакансий с сайта HH и формирование списка вакансий."""
     params = {
         'per_page': 100,
@@ -28,14 +22,14 @@ def api_request_vacancy(company_id):
                     'vacancy_name': vacancy['name'],
                     'salary_from': vacancy['salary']['from'],
                     'requirement': vacancy['snippet']['requirement'],
-                    'vacancy_url': vacancy['alternate_url']
+                    'vacancy_url': vacancy['alternate_url'],
                     'employer_id': int(company_id)
                 }
                 vacancies_list.append(hh_vacancies)
         return vacancies_list
 
 
-def api_request_employer(company_id):
+def api_request_employer(company_id: list[int]) -> dict[str, Any]:
     """Запрос данных о работодателе с сайта НН"""
     params = {
         'employer_id': company_id,
@@ -55,29 +49,21 @@ def api_request_employer(company_id):
         return hh_company
 
 
-def create_database() -> None:
+def create_database(database_name: str, params: dict) -> None:
     """Создание базы данных и таблиц по работодателям и вакансиям"""
 
-    conn = psycopg2.connect(host='localhost', database='postgres', user='postgres', password='5758', port='5432')
+    conn = psycopg2.connect(dbname='postgres', **params)
     conn.autocommit = True
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     cur = conn.cursor()
 
-    cur.execute("""DROP DATABASE IF EXISTS Course_Work_5""")
-    cur.close()
-    conn.close()
-
-    conn = psycopg2.connect(host='localhost', database='postgres', user='postgres', password='5758', port='5432')
-    conn.autocommit = True
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    cur = conn.cursor()
-
-    cur.execute("""CREATE DATABASE Course_Work_5""")
+    cur.execute(f"""DROP DATABASE IF EXISTS {database_name}""")
+    cur.execute(f"""CREATE DATABASE {database_name}""")
 
     cur.close()
     conn.close()
 
-    conn = psycopg2.connect(database='Course_Work_5', host='localhost', user='postgres', password='5758', port='5432')
+    conn = psycopg2.connect(database=database_name, **params)
     with conn.cursor() as cur:
         cur.execute("""
             CREATE TABLE employers(
@@ -96,7 +82,7 @@ def create_database() -> None:
                 vacancy_name VARCHAR(250) NOT NULL,
                 salary_from INTEGER,
                 requirement TEXT,
-                vacancy_url' TEXT,
+                vacancy_url TEXT,
                 employer_id INTEGER REFERENCES employers(employer_id)
             )
         """)
@@ -105,7 +91,7 @@ def create_database() -> None:
     conn.close()
 
 
-def save_data_to_database(employers_ids: list, database_name: str, params: dict) -> None:
+def save_data_to_database(employers_ids: list[int], database_name: str, params: dict) -> None:
     """Заполняет таблицы данными о работодателях и вакансиях с сайта НН"""
 
     conn = psycopg2.connect(dbname=database_name, **params)
@@ -131,7 +117,7 @@ def save_data_to_database(employers_ids: list, database_name: str, params: dict)
                     VALUES (%s, %s, %s, %s, %s)
                     """,
                     (vacancy['vacancy_name'], vacancy['salary_from'], vacancy['requirement'],
-                     vacancy['alternate_url'], vacancy['employer_id'])
+                     vacancy['vacancy_url'], vacancy['employer_id'])
                 )
     conn.commit()
     conn.close()

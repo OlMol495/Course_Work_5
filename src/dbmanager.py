@@ -5,7 +5,7 @@ class DBManager():
     """Подключается к БД PostgreSQL и выполняет различные запросы."""
 
     def __init__(self, params):
-        self.conn = psycopg2.connect(dbname='Course_Work_5', **params)
+        self.conn = psycopg2.connect(dbname='cw', **params)
         self.cur = self.conn.cursor()
 
     def get_companies_and_vacancies_count(self):
@@ -13,7 +13,7 @@ class DBManager():
         Получает список всех компаний и количество вакансий у каждой компании.
         """
         self.cur.execute(
-            """SELECT company_name, open_vacancies FROM companies""")
+            """SELECT company_name, open_vacancies FROM employers""")
 
         result = self.cur.fetchall()
         return result
@@ -27,8 +27,7 @@ class DBManager():
             """
             SELECT company_name, vacancy_name, salary_from, vacancy_url
             FROM vacancies
-            JOIN employers USING (employer_id)
-            GROUP BY employers.company_name
+            JOIN employers USING (employer_id)            
             """
         )
         result = self.cur.fetchall()
@@ -58,6 +57,7 @@ class DBManager():
 
     def get_vacancies_with_keyword(self, keyword):
         """Получает список всех вакансий, в названии которых содержатся переданные в метод слова."""
-        self.cur.execute(f'''SELECT * FROM vacancies WHERE vacancy_name LIKE "%{keyword}%"''')
+        self.cur.execute(f'''SELECT * FROM vacancies 
+                            WHERE vacancy_name LIKE '%{keyword}%' ''')
         result = self.cur.fetchall()
         return result

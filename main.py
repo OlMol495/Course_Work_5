@@ -20,16 +20,17 @@ def main():
     print('В базе представлена информация по открытым вакансиям компаний Яндекс, Россельхозбанк, Сбер, ВТБ,\n'
           '2Гис, Альфабанк, Газпромбанк, Лукойл, Яндекс Еда, Автоваз с сайта HeadHunter.ru\n')
 
-    params = {'host': 'localhost', 'user': 'postgres', 'password': '5758', 'port': '5432'}
-    create_database()
-    save_data_to_database(employers_ids, 'Course_work_5', params)
-    dbmanager = DBManager()
+    params = config()
+    databasename = 'cw'
+    create_database(databasename, params)
+    save_data_to_database(employers_ids, databasename, params)
+    dbmanager = DBManager(params)
 
     while True:
 
         extra = input(
             'Введите 1, чтобы получить список всех компаний с количеством вакансий по каждой из них\n'
-            'Введите 2, чтобы получить список всех компаний с их вакансиями, зарплатой и ссылкой на вакансию\n '
+            'Введите 2, чтобы получить список всех компаний с их вакансиями, зарплатой и ссылкой на вакансию\n'
             'Введите 3, чтобы получить среднюю зарплату по всем вакансиям из базы\n'
             'Введите 4, чтобы получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n'
             'Введите 5, чтобы получить список вакансий по ключевому слову из их названия\n'
@@ -53,7 +54,7 @@ def main():
             print(f'{dbmanager.get_vacancies_with_higher_salary()}\n')
 
         elif extra == '5':
-            keyword = input('Введите слово для поиска вакансий: \n').lower()
+            keyword = input('Введите слово для поиска вакансий: \n')
             print(f'{dbmanager.get_vacancies_with_keyword(keyword)}\n')
 
         else:
